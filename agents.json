@@ -1,0 +1,320 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "title": "Agents",
+  "description": "Schema for `prompt_engineer` `agents.toml`",
+  "type": "object",
+  "patternProperties": {
+    "[a-zA-Z0-9_]+": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string",
+          "description": "Role of the agent. (Used for delegation)"
+        },
+        "system_prompt": {
+          "type": "string",
+          "description": "System prompt for the agent. Set this field to directly set the system prompt, or use `goal` and `backstory` to automatically generate a system prompt."
+        },
+        "goal": {
+          "type": "string",
+          "description": "The goal of the agent. Used in combination with `backstory` to automatically generate a system prompt. Must not be set if `system_prompt` is directly provided."
+        },
+        "backstory": {
+          "type": "string",
+          "description": "The background information of the agent. Used in combination with `goal` to automatically generate a system prompt. Must not be set if `system_prompt` is directly provided."
+        },
+        "user_prompt": {
+          "type": "string",
+          "description": "User prompt for the agent. Set this field to directly set the user prompt, or use `description` and `expected_output` to automatically generate a user prompt."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the agent's task. Used in combination with `expected_output` to automatically generate a user prompt. Must not be set if `user_prompt` is directly provided."
+        },
+        "expected_output": {
+          "type": "string",
+          "description": "Expected output of the agent. Used in combination with `description` to automatically generate a user prompt. Must not be set if `user_prompt` is directly provided."
+        },
+        "coworkers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of co-workers the agent can delegate tasks to."
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Name of the tool."
+          },
+          "description": "List of tools the agent can use."
+        },
+        "Tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of the tool."
+              },
+              "init_params": {
+                "type": "object",
+                "patternProperties": {
+                  "^[a-zA-Z0-9_]+$": {
+                    "type": [
+                      "string",
+                      "number",
+                      "integer",
+                      "boolean"
+                    ]
+                  }
+                },
+                "description": "Initialization parameters for the tool."
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "description": "List of tools the agent can use."
+        },
+        "Toolboxes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of the toolbox."
+              },
+              "tools": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "List of tools in the toolbox."
+              },
+              "Tools": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Name of the tool."
+                    },
+                    "init_params": {
+                      "type": "object",
+                      "patternProperties": {
+                        "^[a-zA-Z0-9_]+$": {
+                          "type": [
+                            "string",
+                            "number",
+                            "integer",
+                            "boolean"
+                          ]
+                        }
+                      },
+                      "description": "Initialization parameters for the tool."
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "List of tools the agent can use."
+              }
+            },
+            "oneOf": [
+              {
+                "required": [
+                  "name",
+                  "tools"
+                ],
+                "not": {
+                  "required": [
+                    "Tools"
+                  ]
+                }
+              },
+              {
+                "required": [
+                  "name",
+                  "Tools"
+                ],
+                "not": {
+                  "required": [
+                    "tools"
+                  ]
+                }
+              }
+            ],
+            "additionalProperties": false
+          },
+          "description": "List of toolboxes the agent can use."
+        },
+        "Model": {
+          "type": "object",
+          "properties": {
+            "api_base": {
+              "type": "string",
+              "description": "API base URL, or the name of the environment variable in which the API base URL is stored."
+            },
+            "model": {
+              "type": "string",
+              "description": "The name of the LLM model."
+            },
+            "api_key_env_var": {
+              "type": "string",
+              "description": "Name of the environment variable in which the API key is stored."
+            },
+            "tool_call_type": {
+              "type": "string",
+              "enum": [
+                "Qwen3",
+                "OpenAI",
+                "Default"
+              ],
+              "description": "Type of tool call to use (Refer to https://github.com/Asteromorph-Corp/prompt_engineer/blob/main/docs/agents.md#-tool-call-type)."
+            },
+            "openai_like_tool_call": {
+              "type": "boolean",
+              "description": "Deprecated. Use `tool_call_type: \"OpenAI\"` instead."
+            },
+            "system_is_assistant": {
+              "type": "boolean",
+              "description": "When set to true, sends the system message as an assistant message. This is used for models that does not allow system message."
+            },
+            "candidate_count": {
+              "type": "integer",
+              "description": "Number of internal candidate completions to consider before choosing the best."
+            },
+            "max_tokens": {
+              "type": "integer",
+              "description": "Maximum number of tokens to generate in the response. Default is None."
+            },
+            "temperature": {
+              "type": "number",
+              "description": "Sampling temperature. Controls randomness. Must be a value between 0 (deterministic) to 2 (very random). Default is 1."
+            },
+            "stop_words": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "A list (up to 4 strings) that signals the model to stop generating output when any is encountered."
+            },
+            "top_k": {
+              "type": "number",
+              "description": "Top-k sampling. Chooses from the top k most likely tokens. Often used with or instead of top_p."
+            },
+            "top_p": {
+              "type": "number",
+              "description": "Top-p (nucleus) sampling. Chooses from the smallest possible set of tokens whose cumulative probability exceeds p. Must be a value between 0 and 1. Default is 1."
+            },
+            "seed": {
+              "type": "integer",
+              "description": "Integer used for deterministic sampling. Ensures reproducibility."
+            },
+            "min_length": {
+              "type": "integer",
+              "description": "No idea what this does."
+            },
+            "max_length": {
+              "type": "integer",
+              "description": "No idea what this does."
+            },
+            "n": {
+              "type": "integer",
+              "description": "Number of completions to generate. Must be a value between 1 and 128. Default is 1."
+            },
+            "repetition_penalty": {
+              "type": "number",
+              "description": "No idea what this does."
+            },
+            "frequency_penalty": {
+              "type": "number",
+              "description": "Penalizes tokens that appear more frequently in the output. OpenAI specific (I think). Must be a value between -2 and 2. Default is 0."
+            },
+            "presence_penalty": {
+              "type": "number",
+              "description": "Penalizes tokens that have already appeared (presence-based penalty). OpenAI specific (I think). Must be a value between -2 and 2. Default is 0."
+            }
+          },
+          "required": [
+            "api_base",
+            "model"
+          ],
+          "not": {
+            "required": [
+              "tool_call_type",
+              "openai_like_tool_call"
+            ]
+          },
+          "description": "Model configuration for the agent.",
+          "additionalProperties": false
+        },
+        "Prompts": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-zA-Z0-9_]+$": {
+              "type": "string"
+            }
+          },
+          "description": "Prompt variables for the agent.",
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "role",
+        "Model"
+      ],
+      "oneOf": [
+        {
+          "required": [
+            "system_prompt"
+          ],
+          "not": {
+            "required": [
+              "goal",
+              "backstory"
+            ]
+          }
+        },
+        {
+          "required": [
+            "goal",
+            "backstory"
+          ],
+          "not": {
+            "required": [
+              "system_prompt"
+            ]
+          }
+        }
+      ],
+      "not": {
+        "oneOf": [
+          {
+            "required": [
+              "user_prompt",
+              "expected_output"
+            ]
+          },
+          {
+            "required": [
+              "user_prompt",
+              "description"
+            ]
+          }
+        ]
+      },
+      "description": "Agent configuration.",
+      "additionalProperties": false
+    }
+  }
+}
